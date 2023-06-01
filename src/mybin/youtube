@@ -1,0 +1,70 @@
+#!/usr/bin/python3
+
+import argparse
+import subprocess
+
+
+"""
+# Downloading videos and audio
+
+
+downloading videos and audio from Youtube
+It is based on youtube-dl
+
+## audio playlist
+
+youtube-dl --ignore-errors --playlist-start NUMBER  --playlist-end NUMBER --yes-playlist --write-description  --write-info-json --write-annotations --write-thumbnail --embed-thumbnail --add-metadata --extract-audio -o '%(playlist)s--%(playlist_id)s/%(playlist_index)s--%(title)s--%(id)s.%(ext)s' https://www.youtube.com/playlist?list=RDEMXGU2sgMkP-Yo2d3WFVXr8g
+
+
+
+## audio track
+youtube-dl --write-description  --write-info-json --write-annotations --write-thumbnail --embed-thumbnail --add-metadata --extract-audio  -o '%(title)s--%(id)s/%(title)s.%(ext)s' https://www.youtube.com/watch?v=_BgvitzAFhI
+
+## video playlist
+
+youtube-dl --ignore-errors --playlist-start NUMBER  --playlist-end NUMBER --yes-playlist --write-description  --write-info-json --write-annotations --write-thumbnail --embed-thumbnail --add-metadata  -o '%(playlist)s--%(playlist_id)s/%(playlist_index)s--%(title)s--%(id)s.%(ext)s' https://www.youtube.com/playlist?list=RDEMXGU2sgMkP-Yo2d3WFVXr8g
+
+
+## single video
+
+youtube-dl --ignore-errors --write-description  --write-info-json --write-annotations --write-thumbnail --embed-thumbnail --add-metadata  -o '%(title)s--%(id)s/%(title)s--%(id)s.%(ext)s' https://youtu.be/0C-Gw-F7zkA
+
+"""
+
+
+
+if __name__ == '__main__' :
+  description = """
+  Downloading videos and audio from Youtube
+  """
+  parser = argparse.ArgumentParser( description=description )
+  parser.add_argument( 'url',  type=ascii, nargs=1, help="The Youtube URL" )
+  parser.add_argument( '-start', '--playlist_start', type=int, nargs='?', \
+    default=1, help="Starting Playlist Track" )
+  parser.add_argument( '-end', '--playlist_end', type=int, nargs='?', \
+    default=0, help="Stop Playlist Track" )
+  parser.add_argument( '-audio', '--audio', default=False,  \
+    action='store_const', const=True, \
+    help="""Download Audio (only) Format. Only needed if one if willing
+             to be able to listen to the media in an audio only mode.""" )
+  args = parser.parse_args()
+  print( args )
+
+  cmd = "youtube-dl --ignore-errors --write-description  --write-info-json --write-annotations --write-thumbnail --embed-thumbnail --add-metadata"
+
+  if args.audio is True:
+    cmd = f"{cmd} --extract-audio" 
+  ## Determine if this is a list
+  if 'list' in args.url:
+    if args.playlist_end != 0:
+      cmd = f"{cmd}  --yes-playlist --playlist-start {args.playlist_start}"\
+            f"  --playlist-end {args.playlist_end}" 
+    cmd = f"{cmd} -o '%(playlist)s--%(playlist_id)s/%(playlist_index)s--%(title)s--%(id)s.%(ext)s'"
+  else:
+    cmd = f"{cmd} -o '%(title)s--%(id)s/%(title)s.%(ext)s'"
+
+  cmd = f"{cmd} {args.url[ 0 ][ 1: -1 ] }"
+
+  print( f"--- {cmd}" )
+  subprocess.Popen( f"{cmd}", shell=True)
+
